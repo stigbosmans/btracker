@@ -1,6 +1,7 @@
 from cryptocompy import coin, price
 from util import in_notebook
 import pandas as pd
+import numpy as np
 if in_notebook():
     import plotly.graph_objs as go
     import plotly.offline as py
@@ -23,9 +24,13 @@ def get_price_data(coin='BTC', frequency='hour', limit=2000):
 
 
 class CoinTracker:
-    def __init__(self, coin_name):
+    def __init__(self, coin_name, frequency='hour'):
         self.coin_name = coin_name
-        self.history = get_price_data(coin_name)
+        self.history = get_price_data(coin_name, frequency)
+        self.raw_data = np.array(self.history[["close"]])
+
+    def get_size(self):
+        return len(self.raw_data)
 
     def get_ohlc(self):
         return self.history[["open", "high", "low", "close"]]

@@ -79,7 +79,6 @@ class Rsi(Indicator):
 
     def get_advice(self, from_step, duration=2):
         dat = np.array(self.data)[from_step: from_step + duration]
-        print(dat)
         if len(dat[dat >= 70]) > 0:
             return Advice(-1, 'RSI')
         elif len(dat[dat <= 30]) > 0:
