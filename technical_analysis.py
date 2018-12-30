@@ -2,12 +2,31 @@ from finta import TA
 import matplotlib.pyplot as plt
 import pandas as pd
 from price_data_collector import CoinTracker
-from util import in_notebook
+from util import in_notebook, find_intersection
+import numpy as np
 if in_notebook():
     import plotly.graph_objs as go
     import plotly.offline as py
     from plotly.offline import init_notebook_mode
     init_notebook_mode(connected=True)
+
+
+class Advice:
+    def __init__(self, advice: int, indicator_type:str):
+        """
+
+        :param advice: >0=buy, 0=hold, <0=sell
+        """
+        self.advice = advice
+        self.indicator_type = indicator_type
+
+    def __repr__(self):
+        if self.advice > 0:
+            return f"{self.indicator_type} advice: Buy"
+        elif self.advice < 0:
+            return f"{self.indicator_type} advice: Sell"
+        else:
+            return f"{self.indicator_type} advice: Hold"
 
 
 class Indicator:
@@ -41,14 +60,28 @@ class Macd(Indicator):
             plt.plot(range(limit), self.data["SIGNAL"].iloc[-limit:].values, label="SIGNAL")
             plt.legend()
 
+    def get_advice(self, from_step, duration=2):
+        macd = np.array(self.data["MACD"])[from_step: from_step + duration]
+        signal = np.array(self.data["SIGNAL"])[from_step: from_step + duration]
+        print(macd)
+        print(signal)
+        print(find_intersection(macd, signal))
+
 
 class Rsi(Indicator):
     def __init__(self, coin_tracker: CoinTracker):
         super().__init__(coin_tracker)
         self.data = TA.RSI(coin_tracker.get_ohlc())
 
-    def get_events(self):
-        pass
+    def get_advice(self, from_step, duration=2):
+        dat = np.array(self.data)[from_step: from_step + duration]
+        print(dat)
+        if len(dat[dat >= 70]) > 0:
+            return Advice(-1, 'RSI')
+        elif len(dat[dat <= 30]) > 0:
+            return Advice(1, 'RSI')
+        else:
+            return Advice(0, 'RSI')
 
     def plot(self, limit):
         if in_notebook():
