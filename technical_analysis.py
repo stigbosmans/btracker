@@ -63,9 +63,13 @@ class Macd(Indicator):
     def get_advice(self, from_step, duration=2):
         macd = np.array(self.data["MACD"])[from_step: from_step + duration]
         signal = np.array(self.data["SIGNAL"])[from_step: from_step + duration]
-        print(macd)
-        print(signal)
-        print(find_intersection(macd, signal))
+        id, is_type = find_intersection(macd, signal)
+        if is_type == 0:
+            return Advice(0, 'MACD')
+        elif is_type == 1:
+            return Advice(1, 'MACD')
+        elif is_type == -1:
+            return Advice(-1, 'MACD')
 
 
 class Rsi(Indicator):
